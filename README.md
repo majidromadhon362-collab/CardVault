@@ -1,188 +1,113 @@
 # CardVault
 
-CardVault adalah desktop app untuk videografer yang ingin backup footage dari MMC/SD card ke laptop sambil mengecilkan ukuran file menggunakan FFmpeg.
+CardVault adalah desktop app Windows untuk kreator dan videografer yang ingin memproses file secara lokal: kompres video, buat proxy, convert media, extract audio, dan convert dokumen tanpa upload file ke server.
 
-Tagline: Secure footage backup, lighter storage.
+Tagline: **Secure footage backup, lighter storage.**
 
-App ini dibuat sebagai workflow sederhana:
+## Untuk User
 
-1. Pilih video dari MMC/SD card, external drive, atau folder project.
-2. Pilih preset kompresi.
-3. Pilih folder output di laptop.
-4. Jalankan kompres batch.
-5. Cek hasil ukuran sebelum/sesudah.
+Download installer dari halaman **Releases**, lalu jalankan file `.exe` installer. Setelah install, CardVault langsung bisa dipakai.
 
-## Status Project
+User tidak perlu install tambahan:
 
-Versi awal ini adalah MVP desktop app berbasis Electron + React + FFmpeg.
+- FFmpeg dan FFprobe sudah dibundle di installer.
+- Converter dokumen berjalan native di dalam app, tanpa LibreOffice.
+- File diproses lokal di komputer user.
 
-Fitur yang sudah ada:
+Jangan download `Source code (zip)` untuk penggunaan normal. File itu adalah snapshot source project, bukan installer aplikasi.
 
-- Home dashboard dengan group `Video Tools`, `Audio Tools`, dan `File Converter`.
-- Video tools: compress video, proxy generator, convert format, merge video, generate thumbnail, resize video, change FPS, remove audio, burn subtitle.
-- Audio tools: extract audio ke MP3/AAC/WAV.
-- File converter: PDF to Word, PDF to Excel, Word to PDF, Excel to PDF via LibreOffice lokal.
-- Drag and drop, choose files, scan folder, dan pilih folder output.
-- Progress proses, ETA, speed, pause queue, cancel, retry failed, dan sound notification.
-- Before/after summary, validation check, dan preview output media.
-- Auto rename output agar file lama tidak ketimpa.
+## Fitur Utama
 
-## Apakah Perlu Database?
+- Video: compress, proxy generator, convert format, merge video, thumbnail, resize, change FPS, remove audio, burn subtitle.
+- Audio: extract audio ke MP3, AAC, atau WAV.
+- Dokumen: PDF ke DOCX, PDF ke XLSX, DOCX ke PDF, XLSX ke PDF secara best-effort.
+- Drag and drop, pilih file, scan folder, dan pilih folder output.
+- Progress batch, ETA, speed, pause, cancel, retry failed, dan notifikasi selesai.
+- Preview output video/audio/image.
+- Output aman dengan suffix `-cardvault`, tidak overwrite file lama.
+- Original/source file tidak pernah dihapus otomatis.
+- Update app manual: app memberi banner jika versi baru tersedia, user memilih sendiri kapan update.
 
-Untuk MVP ini tidak perlu database.
+## Catatan Converter Dokumen
 
-Alasannya:
+Converter dokumen tidak memakai LibreOffice. Implementasi native menjaga installer tetap kecil dan semua fitur bisa dipakai setelah sekali install.
 
-- App hanya memproses file lokal.
-- File source dan output sudah ada di filesystem.
-- Riwayat kompres belum wajib disimpan permanen.
-- Setting preset bisa disimpan nanti sebagai config lokal kalau dibutuhkan.
+Batasan yang sengaja diberi label jelas:
 
-Kalau nanti app berkembang, opsi penyimpanan yang masuk akal:
-
-- Config lokal untuk default preset dan folder terakhir.
-- JSON file untuk history ringan.
-- SQLite hanya kalau butuh katalog footage, tag, project, search, dan riwayat kompres jangka panjang.
+- Format modern `.docx` dan `.xlsx` didukung.
+- Format lama `.doc` dan `.xls` tidak didukung; simpan ulang sebagai `.docx` atau `.xlsx`.
+- PDF ke Word/Excel bersifat best-effort karena struktur PDF tidak selalu menyimpan tabel dan paragraf secara rapi.
 
 ## Tech Stack
 
-- Electron untuk desktop app.
-- React untuk UI.
-- Vite untuk development/build renderer.
-- FFmpeg dan FFprobe untuk kompresi dan baca metadata video.
-- Electron Builder untuk packaging installer Windows.
+- Tauri untuk desktop app ringan.
+- React + Vite untuk renderer UI.
+- Rust backend untuk dialog native, filesystem, queue processing, dan document converter.
+- FFmpeg/FFprobe bundled untuk video dan audio.
+- Tauri updater untuk pengecekan update manual berbasis GitHub Releases.
 
-## Requirement
+Electron masih ada sebagai fallback development lama, tetapi build distribusi utama adalah Tauri.
 
-Install dulu:
-
-- Node.js 20 atau lebih baru.
-- npm.
-
-Untuk development/build installer, mesin developer perlu FFmpeg dan FFprobe agar bisa dibundle ke installer. Untuk user yang menginstall app dari installer final, FFmpeg sudah ikut dibundle.
-
-Untuk fitur `File Converter`, user perlu LibreOffice terinstall. Ini tetap 0 biaya dan proses berjalan lokal. Jika LibreOffice belum tersedia, CardVault akan menampilkan pesan validasi yang jelas.
-
-Cek FFmpeg:
-
-```powershell
-ffmpeg -version
-ffprobe -version
-```
-
-Kalau command belum dikenali, baca `docs/FFMPEG_SETUP.md`.
-
-## Setup Development
+## Development
 
 Install dependency:
 
 ```powershell
-npm install
+npm ci
 ```
 
-Siapkan FFmpeg bundled untuk packaging:
+Siapkan FFmpeg untuk build lokal:
 
 ```powershell
 npm run prepare:ffmpeg
 ```
 
-Jalankan app mode development:
-
-```powershell
-npm run dev
-```
-
-Build renderer:
+Jalankan renderer build:
 
 ```powershell
 npm run build
 ```
 
-Build folder app tanpa installer:
+Jalankan Tauri dev:
 
 ```powershell
-npm run package
+$env:Path = "C:\Users\HP\.cargo\bin;$env:Path"
+npm run tauri:dev
 ```
 
 Build installer Windows:
-
-```powershell
-npm run dist
-```
-
-Build versi Tauri yang lebih ringan:
 
 ```powershell
 $env:Path = "C:\Users\HP\.cargo\bin;$env:Path"
 npm run tauri:build
 ```
 
-Output Tauri ada di:
+Output installer:
 
 ```text
-src-tauri/target/release/bundle/
+src-tauri/target/release/bundle/nsis/
+src-tauri/target/release/bundle/msi/
 ```
 
-Output build ada di folder `release/`.
+## Release
 
-## Cara Pakai
+Release dibuat otomatis oleh GitHub Actions saat tag versi dipush:
 
-1. Buka app.
-2. Ikuti onboarding step-by-step yang muncul pertama kali.
-3. Pastikan status `FFmpeg Ready` muncul di kanan atas.
-4. Klik `Tambah File` dan pilih video dari MMC/SD card.
-5. Pilih preset:
-   - `High Quality`: hasil paling aman secara visual, ukuran masih bisa turun.
-   - `Balanced`: rekomendasi harian.
-   - `Small Size`: ukuran lebih kecil, kualitas lebih agresif.
-6. Klik `Pilih Folder Output`.
-7. Klik `Mulai Kompres`.
-8. Tunggu proses selesai dan cek hasil di panel `Hasil Terakhir`.
-
-## Catatan Kualitas
-
-Kompresi yang benar-benar tanpa penurunan kualitas biasanya tidak bisa mengecilkan ukuran jauh. App ini memakai pendekatan visually lossless, yaitu hasil tetap terlihat aman secara mata, tapi ukuran file bisa lebih kecil.
-
-Preset saat ini memakai H.265/HEVC karena efisien untuk archive video. Kalau butuh kompatibilitas maksimal untuk semua device lama, preset H.264 bisa ditambahkan nanti.
-
-## Struktur Folder
-
-```text
-.
-├── src/
-│   ├── main/
-│   │   ├── main.js
-│   │   └── preload.cjs
-│   └── renderer/
-│       ├── App.jsx
-│       ├── main.jsx
-│       └── styles.css
-├── docs/
-│   ├── DEVELOPMENT.md
-│   ├── FFMPEG_SETUP.md
-│   ├── PACKAGING.md
-│   └── USER_GUIDE.md
-├── AGENTS.md
-├── ARCHITECTURE.md
-├── package.json
-└── vite.config.js
+```powershell
+git tag v0.1.3
+git push origin v0.1.3
 ```
 
-## Roadmap
+GitHub Actions membutuhkan repository secrets:
 
-- Simpan folder output terakhir.
-- Tambah preset H.264 untuk kompatibilitas.
-- Tambah opsi hardware encoder NVIDIA/Intel/AMD.
-- Tambah estimasi durasi kompres.
-- Tambah mode pilih folder source dan scan semua video.
-- Tambah validasi hasil sebelum original dihapus manual oleh user.
-- Tambah app icon custom agar installer tidak memakai icon default Electron.
+- `TAURI_SIGNING_PRIVATE_KEY`
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
+
+Installer yang dibagikan ke user adalah file `.exe` dari release assets, bukan `Source code (zip)`.
 
 ## Prinsip Aman Backup
 
-Jangan hapus file original dari MMC/SD card sebelum:
-
-- File hasil kompres selesai tanpa error.
-- File output bisa diputar.
-- Ukuran dan durasi masuk akal.
-- Minimal satu backup tambahan sudah dibuat jika footage penting.
+- Jangan hapus file original sebelum output dicek.
+- Pastikan output bisa diputar atau dibuka.
+- Pastikan durasi/ukuran output masuk akal.
+- Untuk footage penting, tetap simpan minimal satu backup tambahan.

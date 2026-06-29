@@ -4,15 +4,17 @@ Panduan ini untuk AI agent atau developer yang mengerjakan CardVault.
 
 ## Tujuan Produk
 
-CardVault membantu videografer melakukan backup footage dari MMC/SD card ke laptop sambil mengurangi ukuran file memakai FFmpeg.
+CardVault membantu videografer dan kreator memproses file lokal setelah dokumentasi/event: kompres video, buat proxy, convert media, extract audio, dan convert dokumen tanpa upload ke server.
 
 Prioritas produk:
 
 - Aman untuk workflow backup.
 - Mudah dipakai setelah dokumentasi/event selesai.
 - Tidak menghapus file original otomatis.
+- Tidak overwrite output yang sudah ada.
 - Kualitas visual tetap aman.
 - Batch processing harus jelas statusnya.
+- User cukup sekali install untuk memakai fitur utama.
 
 ## Aturan Kerja
 
@@ -22,36 +24,44 @@ Prioritas produk:
 - Jangan menjalankan command destruktif ke folder user.
 - Jaga UI tetap sederhana dan jelas untuk workflow harian.
 - Prefer perubahan kecil yang langsung menyelesaikan masalah.
+- Jangan mengembalikan ketergantungan LibreOffice tanpa alasan kuat; document converter sekarang native Rust.
+- Update app harus manual dari keputusan user, bukan auto-download diam-diam.
 
 ## Tech Stack
 
-- Electron main process untuk akses dialog native, filesystem, dan FFmpeg.
-- Preload script untuk expose API aman ke renderer.
+- Tauri sebagai target distribusi utama.
+- Rust backend untuk filesystem, dialog native, FFmpeg spawn, queue, dan converter dokumen.
 - React renderer untuk UI.
-- FFmpeg sebagai engine encode.
-- FFprobe untuk metadata seperti durasi.
+- FFmpeg/FFprobe sebagai engine video/audio dan metadata.
+- Tauri updater untuk pengecekan update manual.
+- Electron masih ada sebagai fallback lama, bukan target utama release.
 
 ## Area Penting
 
-- `src/main/main.js`: IPC, dialog file/folder, queue kompres, FFmpeg spawn.
-- `src/main/preload.cjs`: bridge API dari main ke renderer.
-- `src/renderer/App.jsx`: state UI dan workflow user.
+- `src-tauri/src/lib.rs`: command Tauri, dialog, queue, FFmpeg spawn, progress events.
+- `src-tauri/src/document.rs`: converter dokumen native Rust.
+- `src-tauri/tauri.conf.json`: bundle, resource FFmpeg, updater endpoint, updater artifacts.
+- `src/renderer/App.jsx`: state UI, i18n, workflow user, manual update banner.
+- `src/renderer/native.js`: adapter `window.kompres` untuk API Tauri.
 - `src/renderer/styles.css`: visual desktop app.
-- `docs/`: dokumentasi setup dan penggunaan.
+- `.github/workflows/release.yml`: build installer dan publish GitHub Release.
 
 ## Testing Manual Minimal
 
 Sebelum menganggap perubahan selesai:
 
+- Jalankan `npm ci`.
 - Jalankan `npm run build`.
-- Jalankan `npm run dev` jika dependency sudah terinstall.
-- Pastikan app bisa membuka dialog file dan folder.
+- Jalankan `cargo check` dari folder `src-tauri`.
+- Jika perubahan menyentuh bundling, jalankan `npm run tauri:build`.
+- Pastikan dialog file dan folder bisa dibuka.
 - Pastikan status FFmpeg benar.
 - Coba kompres satu file kecil.
+- Coba satu konversi dokumen sederhana.
 - Cek output tidak menimpa file lama.
 
 ## Catatan FFmpeg
 
-Preset utama saat ini memakai `libx265` karena targetnya archive hemat storage.
+Preset utama memakai `libx265` karena targetnya archive hemat storage.
 
 Jangan mengganti preset ke opsi yang jauh lebih agresif tanpa memberi label jelas ke user. Untuk videografer, kehilangan detail visual bisa berbahaya untuk footage penting.

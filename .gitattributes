@@ -1,0 +1,12 @@
+AGENTS.md export-ignore
+ARCHITECTURE.md export-ignore
+.editorconfig export-ignore
+.github/** export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
+"Brand Assets/**" export-ignore
+docs/** export-ignore
+release/** export-ignore
+resources/** export-ignore
+src-tauri/target/** export-ignore
+web/** export-ignore

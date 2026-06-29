@@ -5,6 +5,9 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -31,11 +34,33 @@ jobs:
 
       - name: Build Tauri
         run: npm run tauri:build
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+      - name: Generate Updater Manifest
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          $asset = Get-ChildItem "src-tauri/target/release/bundle/nsis/*setup.exe" | Select-Object -First 1
+          if (-not $asset) { throw "NSIS installer not found" }
+          $signaturePath = "$($asset.FullName).sig"
+          if (-not (Test-Path -LiteralPath $signaturePath)) { throw "Updater signature not found: $signaturePath" }
+          $signature = (Get-Content -Raw -LiteralPath $signaturePath).Trim()
+          $url = "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/$($asset.Name)"
+          $manifest = [ordered]@{
+            version = $version
+            notes = "CardVault $version"
+            pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+            platforms = @{
+              "windows-x86_64" = @{
+                signature = $signature
+                url = $url
+              }
+            }
+          }
+          $manifest | ConvertTo-Json -Depth 5 | Set-Content -Encoding UTF8 -LiteralPath "src-tauri/target/release/bundle/latest.json"
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2

@@ -1,6 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
+import { relaunch } from '@tauri-apps/plugin-process';
 import { check } from '@tauri-apps/plugin-updater';
+
+let pendingUpdate = null;
 
 if (!window.kompres && window.__TAURI_INTERNALS__) {
   window.kompres = {
@@ -19,8 +22,16 @@ if (!window.kompres && window.__TAURI_INTERNALS__) {
     pauseCompression: () => invoke('pause_job'),
     resumeCompression: () => invoke('resume_job'),
     checkForUpdates: async () => {
-      const update = await check();
-      return update ? { available: true, version: update.version, body: update.body || '' } : { available: false };
+      pendingUpdate = await check();
+      return pendingUpdate ? { available: true, version: pendingUpdate.version, body: pendingUpdate.body || '' } : { available: false };
+    },
+    installUpdate: async () => {
+      const update = pendingUpdate || await check();
+      if (!update) return { ok: false, message: 'No update available.' };
+      pendingUpdate = update;
+      await update.downloadAndInstall();
+      await relaunch();
+      return { ok: true };
     },
     getPathForFile: (file) => file.path || file.name || '',
     on: (channel, callback) => {

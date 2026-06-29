@@ -5,6 +5,8 @@ const LANGUAGES = {
   en: { label: 'English', flag: '🇬🇧' },
 };
 
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || '0.1.3';
+
 const TEXT = {
   id: {
     tagline: 'Backup footage aman, storage lebih ringan.',
@@ -63,7 +65,7 @@ const TEXT = {
     timestamp: 'Timestamp',
     chooseSubtitle: 'Pilih Subtitle',
     subtitleNotSelected: 'Belum dipilih',
-    converterNote: 'Converter file 0 biaya memakai LibreOffice lokal. Jika belum tersedia, app akan memberi validasi jelas.',
+    converterNote: 'Converter dokumen berjalan lokal di dalam app. Tidak perlu install LibreOffice atau upload file ke server.',
     consentTitle: 'Persetujuan Privasi',
     consentBody: 'CardVault memproses file secara lokal di laptop kamu. File tidak diupload ke server. Izinkan notifikasi jika ingin menerima info saat proses selesai.',
     acceptPrivacy: 'Saya Setuju',
@@ -81,10 +83,17 @@ const TEXT = {
     preparingFiles: 'Menyiapkan file...',
     pauseRequested: 'Pause diminta. File aktif akan diselesaikan dulu.',
     aboutTitle: 'Tentang CardVault',
-    aboutBody: 'CardVault adalah desktop app untuk kreator yang membantu kompres video, membuat proxy, konversi media, ekstrak audio, dan konversi dokumen secara lokal. Engine media memakai FFmpeg yang dibundle di installer. Converter dokumen memakai LibreOffice lokal jika tersedia.',
+    aboutBody: 'CardVault adalah desktop app untuk kreator yang membantu kompres video, membuat proxy, konversi media, ekstrak audio, dan konversi dokumen secara lokal. Engine media memakai FFmpeg yang dibundle di installer. Converter dokumen berjalan native di dalam app tanpa LibreOffice.',
     termsTitle: 'Syarat & Ketentuan',
     termsBody: 'Gunakan CardVault untuk file yang kamu punya haknya. Selalu cek hasil output sebelum menghapus file original. Fitur dokumen bersifat best-effort karena hasil PDF ke Word/Excel bergantung pada struktur file sumber.',
     footer: 'Proses lokal. Original tidak dihapus otomatis.',
+    versionLabel: 'Versi {version}',
+    updateAvailableTitle: 'Update tersedia',
+    updateAvailableBody: 'Versi {version} sudah tersedia. Update tidak otomatis; klik tombol ini jika ingin memperbarui sekarang.',
+    updateNow: 'Update Sekarang',
+    remindLater: 'Nanti Saja',
+    updateInstalling: 'Mengunduh dan menginstall update...',
+    updateFailed: 'Update gagal. Coba download installer terbaru dari halaman Releases.',
     groups: {
       video: { title: 'Video', description: 'Kompres, convert, proxy, thumbnail, subtitle, dan cleanup video.' },
       audio: { title: 'Audio', description: 'Ambil audio dari video dan ubah format audio.' },
@@ -164,7 +173,7 @@ const TEXT = {
     timestamp: 'Timestamp',
     chooseSubtitle: 'Choose Subtitle',
     subtitleNotSelected: 'Not selected',
-    converterNote: 'File converter uses local LibreOffice for zero-cost conversion. If unavailable, the app will show a clear validation message.',
+    converterNote: 'Document conversion runs locally inside the app. No LibreOffice install or server upload is required.',
     consentTitle: 'Privacy Consent',
     consentBody: 'CardVault processes files locally on your laptop. Files are not uploaded to a server. Allow notifications if you want completion alerts.',
     acceptPrivacy: 'I Agree',
@@ -182,10 +191,17 @@ const TEXT = {
     preparingFiles: 'Preparing files...',
     pauseRequested: 'Pause requested. Active file will finish first.',
     aboutTitle: 'About CardVault',
-    aboutBody: 'CardVault is a desktop app for creators to compress videos, generate proxies, convert media, extract audio, and convert documents locally. Media processing uses FFmpeg bundled in the installer. Document conversion uses local LibreOffice when available.',
+    aboutBody: 'CardVault is a desktop app for creators to compress videos, generate proxies, convert media, extract audio, and convert documents locally. Media processing uses FFmpeg bundled in the installer. Document conversion runs natively inside the app without LibreOffice.',
     termsTitle: 'Terms & Conditions',
     termsBody: 'Use CardVault only for files you have rights to process. Always verify output before deleting originals. Document conversion is best-effort because PDF to Word/Excel quality depends on the source file structure.',
     footer: 'Local processing. Originals are never deleted automatically.',
+    versionLabel: 'Version {version}',
+    updateAvailableTitle: 'Update available',
+    updateAvailableBody: 'Version {version} is available. Updates are not automatic; click the button if you want to update now.',
+    updateNow: 'Update Now',
+    remindLater: 'Later',
+    updateInstalling: 'Downloading and installing update...',
+    updateFailed: 'Update failed. Download the latest installer from Releases.',
     groups: {
       video: { title: 'Video', description: 'Compress, convert, proxy, thumbnail, subtitle, and cleanup tools.' },
       audio: { title: 'Audio', description: 'Extract audio from videos and convert audio formats.' },
@@ -305,6 +321,8 @@ function App() {
   const [diskInfo, setDiskInfo] = useState(null);
   const [preview, setPreview] = useState(null);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState(null);
+  const [updateInstalling, setUpdateInstalling] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(() => localStorage.getItem('cardvault-privacy') === 'yes');
   const [notifyEnabled, setNotifyEnabled] = useState(() => localStorage.getItem('cardvault-notify') === 'yes');
   const dragDepth = useRef(0);
@@ -327,7 +345,7 @@ function App() {
     window.kompres.checkFfmpeg().then(setFfmpeg);
     window.kompres.checkForUpdates?.().then((update) => {
       if (update?.available) {
-        setNotice(language === 'id' ? `Update tersedia: v${update.version}` : `Update available: v${update.version}`);
+        setUpdateInfo(update);
       }
     }).catch(() => {});
     const offProgress = window.kompres.on('compress:progress', setProgress);
@@ -470,6 +488,19 @@ function App() {
     if (skipNotify) setNotifyEnabled(false);
   }
 
+  async function handleInstallUpdate() {
+    setUpdateInstalling(true);
+    setNotice(t.updateInstalling);
+    try {
+      const response = await window.kompres.installUpdate?.();
+      if (!response?.ok) setNotice(response?.message || t.updateFailed);
+    } catch {
+      setNotice(t.updateFailed);
+    } finally {
+      setUpdateInstalling(false);
+    }
+  }
+
   function renderHeader() {
     return (
       <header className="app-header">
@@ -577,6 +608,7 @@ function App() {
     <main className="app-shell compact-shell">
       {renderHeader()}
       {!privacyAccepted && <section className="consent-overlay"><div className="consent-card"><h2>{t.consentTitle}</h2><p>{t.consentBody}</p><div className="consent-actions"><button className="primary-button" onClick={() => acceptPrivacy(true)}>{t.acceptPrivacy}</button><button className="secondary-button" onClick={allowNotifications}>{t.allowNotifications}</button><button className="ghost-button" onClick={() => acceptPrivacy(true)}>{t.skipNotifications}</button></div></div></section>}
+      {updateInfo && <section className="update-card"><div><p className="eyebrow">CardVault</p><h2>{t.updateAvailableTitle}</h2><p>{replaceTokens(t.updateAvailableBody, { version: updateInfo.version })}</p>{updateInfo.body && <small>{updateInfo.body}</small>}</div><div className="update-actions"><button className="primary-button" disabled={updateInstalling} onClick={handleInstallUpdate}>{updateInstalling ? t.working : t.updateNow}</button><button className="ghost-button" disabled={updateInstalling} onClick={() => setUpdateInfo(null)}>{t.remindLater}</button></div></section>}
       {guideOpen && selectedToolText && <section className="preview-overlay"><div className="guide-modal"><div className="preview-header"><div><p className="eyebrow">{t.guideTitle}</p><h2>{selectedToolText[0]}</h2></div><button className="ghost-button" onClick={() => setGuideOpen(false)}>{t.close}</button></div><p>{selectedToolText[2]}</p></div></section>}
       {preview && <section className="preview-overlay"><div className="preview-modal"><div className="preview-header"><div><p className="eyebrow">{t.preview}</p><h2>{fileName(preview.outputFile)}</h2></div><button className="ghost-button" onClick={() => setPreview(null)}>{t.close}</button></div>{preview.previewType === 'image' && <img className="preview-image" src={preview.outputUrl} alt={fileName(preview.outputFile)} />}{preview.previewType === 'audio' && <audio className="preview-audio" src={preview.outputUrl} controls autoPlay />}{preview.previewType === 'video' && <video src={preview.outputUrl} controls autoPlay />}<div className="preview-meta"><span>{preview.outputSizeText}</span><span>{preview.validation?.message}</span></div></div></section>}
       {page === 'home' && renderHome()}
@@ -585,7 +617,7 @@ function App() {
       {(progress || notice || isRunning) && <section className="panel progress-panel" ref={progressRef}>{isRunning && <div className="process-orb" aria-hidden="true"><span /><span /><span /></div>}{progress && <div className="progress-content"><div className="progress-header"><strong>{progress.file ? fileName(progress.file) : t.working}</strong><span>{progress.index}/{progress.total}</span></div><div className="progress-stats"><span>{t.current} {progress.percent || 0}%</span><span>{t.total} {progress.overallPercent || 0}%</span><span>{t.eta} {formatDuration(progress.etaSeconds)}</span><span>{progress.speed ? `${progress.speed}x` : t.working}</span></div><div className="progress-track"><div className="progress-fill" style={{ width: `${progress.percent || 0}%` }} /></div><div className="progress-track total-track"><div className="progress-fill total-fill" style={{ width: `${progress.overallPercent || 0}%` }} /></div></div>}{notice && <p className="notice">{notice}</p>}</section>}
       {results.length > 0 && <section className="summary-grid"><article className="summary-card"><small>{t.before}</small><strong>{summary.inputText}</strong></article><article className="summary-card"><small>{t.after}</small><strong>{summary.outputText}</strong></article><article className="summary-card highlight"><small>{t.saved}</small><strong>{summary.savedText}</strong><span>{summary.savedPercent}%</span></article><article className="summary-card"><small>{t.validation}</small><strong>{summary.validated}/{results.length}</strong></article></section>}
       {(results.length > 0 || errors.length > 0) && <section className="panel result-panel"><div className="queue-header"><div><p className="label">{t.results}</p><strong>{replaceTokens(t.successFailed, { success: results.length, failed: errors.length })}</strong></div></div><div className="sheet-list"><div className="sheet-row sheet-head result-head"><span>{t.fileName}</span><span>{t.before}</span><span>{t.after}</span><span>{t.saved}</span><span>{t.validation}</span><span>{t.preview}</span></div>{results.map((result) => <div className="sheet-row result-row" key={result.outputFile}><strong title={fileName(result.outputFile)}>{fileName(result.outputFile)}</strong><span>{result.inputSizeText}</span><span>{result.outputSizeText}</span><span>{result.savedPercent}%</span><span className={result.validation?.ok ? 'valid-badge' : 'invalid-badge'}>{result.validation?.ok ? t.valid : t.check}</span>{['video', 'audio', 'image'].includes(result.previewType) ? <button onClick={() => setPreview(result)}>{t.play}</button> : <span>{t.savedFile}</span>}</div>)}{errors.map((error) => <div className="sheet-row result-row error" key={`${error.sourceFile}-${error.message}`}><strong>{fileName(error.sourceFile)}</strong><span>Failed</span><span>{error.message}</span><span /><span /><span /></div>)}</div></section>}
-      <footer className="app-footer"><span>{t.footer}</span><button onClick={() => setPage('about')}>{t.about}</button><button onClick={() => setPage('terms')}>{t.terms}</button></footer>
+      <footer className="app-footer"><span>{t.footer}</span><span>{replaceTokens(t.versionLabel, { version: APP_VERSION })}</span><button onClick={() => setPage('about')}>{t.about}</button><button onClick={() => setPage('terms')}>{t.terms}</button></footer>
     </main>
   );
 }
