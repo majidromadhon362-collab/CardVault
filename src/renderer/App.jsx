@@ -5,7 +5,7 @@ const LANGUAGES = {
   en: { label: 'English', flag: '🇬🇧' },
 };
 
-const APP_VERSION = import.meta.env.VITE_APP_VERSION || '0.1.4';
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || '0.1.5';
 
 const TEXT = {
   id: {
@@ -89,11 +89,11 @@ const TEXT = {
     footer: 'Proses lokal. Original tidak dihapus otomatis.',
     versionLabel: 'Versi {version}',
     updateAvailableTitle: 'Update tersedia',
-    updateAvailableBody: 'Versi {version} sudah tersedia. Update tidak otomatis; klik tombol ini jika ingin memperbarui sekarang.',
-    updateNow: 'Update Sekarang',
+    updateAvailableBody: 'Versi {version} sudah tersedia. Update tidak otomatis; klik tombol ini untuk membuka download installer terbaru.',
+    updateNow: 'Download Update',
     remindLater: 'Nanti Saja',
-    updateInstalling: 'Mengunduh dan menginstall update...',
-    updateFailed: 'Update gagal. Coba download installer terbaru dari halaman Releases.',
+    updateInstalling: 'Membuka halaman download update...',
+    updateFailed: 'Gagal membuka halaman update. Download installer terbaru dari halaman Releases.',
     groups: {
       video: { title: 'Video', description: 'Kompres, convert, proxy, thumbnail, subtitle, dan cleanup video.' },
       audio: { title: 'Audio', description: 'Ambil audio dari video dan ubah format audio.' },
@@ -197,11 +197,11 @@ const TEXT = {
     footer: 'Local processing. Originals are never deleted automatically.',
     versionLabel: 'Version {version}',
     updateAvailableTitle: 'Update available',
-    updateAvailableBody: 'Version {version} is available. Updates are not automatic; click the button if you want to update now.',
-    updateNow: 'Update Now',
+    updateAvailableBody: 'Version {version} is available. Updates are not automatic; click the button to open the latest installer download.',
+    updateNow: 'Download Update',
     remindLater: 'Later',
-    updateInstalling: 'Downloading and installing update...',
-    updateFailed: 'Update failed. Download the latest installer from Releases.',
+    updateInstalling: 'Opening the update download page...',
+    updateFailed: 'Could not open the update page. Download the latest installer from Releases.',
     groups: {
       video: { title: 'Video', description: 'Compress, convert, proxy, thumbnail, subtitle, and cleanup tools.' },
       audio: { title: 'Audio', description: 'Extract audio from videos and convert audio formats.' },
@@ -492,7 +492,7 @@ function App() {
     setUpdateInstalling(true);
     setNotice(t.updateInstalling);
     try {
-      const response = await window.kompres.installUpdate?.();
+      const response = await window.kompres.installUpdate?.(updateInfo?.url);
       if (!response?.ok) setNotice(response?.message || t.updateFailed);
     } catch {
       setNotice(t.updateFailed);

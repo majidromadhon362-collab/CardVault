@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "Default CardVault permissions",
   "windows": ["main"],
-  "permissions": ["core:default", "notification:default", "process:default", "updater:default"]
+  "permissions": ["core:default", "notification:default", "opener:default"]
 }

@@ -26,7 +26,7 @@ Jangan download `Source code (zip)` untuk penggunaan normal. File itu adalah sna
 - Preview output video/audio/image.
 - Output aman dengan suffix `-cardvault`, tidak overwrite file lama.
 - Original/source file tidak pernah dihapus otomatis.
-- Update app manual: app memberi banner jika versi baru tersedia, user memilih sendiri kapan update.
+- Update app manual: app memberi banner jika versi baru tersedia dan membuka halaman download installer terbaru saat user klik.
 
 ## Catatan Converter Dokumen
 
@@ -44,7 +44,7 @@ Batasan yang sengaja diberi label jelas:
 - React + Vite untuk renderer UI.
 - Rust backend untuk dialog native, filesystem, queue processing, dan document converter.
 - FFmpeg/FFprobe bundled untuk video dan audio.
-- Tauri updater untuk pengecekan update manual berbasis GitHub Releases.
+- GitHub Releases untuk distribusi installer dan pengecekan update manual.
 
 Electron masih ada sebagai fallback development lama, tetapi build distribusi utama adalah Tauri.
 
@@ -94,14 +94,11 @@ src-tauri/target/release/bundle/msi/
 Release dibuat otomatis oleh GitHub Actions saat tag versi dipush:
 
 ```powershell
-git tag v0.1.3
-git push origin v0.1.3
+git tag v0.1.5
+git push origin v0.1.5
 ```
 
-GitHub Actions membutuhkan repository secrets:
-
-- `TAURI_SIGNING_PRIVATE_KEY`
-- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
+GitHub Actions tidak membutuhkan updater signing secret. Workflow hanya build installer dan upload release assets.
 
 Installer yang dibagikan ke user adalah file `.exe` dari release assets, bukan `Source code (zip)`.
 

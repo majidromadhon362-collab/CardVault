@@ -583,8 +583,7 @@ fn resume_job(state: State<AppState>) -> BasicResponse {
 pub fn run() {
   tauri::Builder::default()
     .plugin(tauri_plugin_notification::init())
-    .plugin(tauri_plugin_process::init())
-    .plugin(tauri_plugin_updater::Builder::new().build())
+    .plugin(tauri_plugin_opener::init())
     .manage(AppState::default())
     .invoke_handler(tauri::generate_handler![select_files, select_source_folder, select_folder, select_subtitle, expand_files, inspect_files, check_ffmpeg, start_tool, cancel_job, pause_job, resume_job])
     .run(tauri::generate_context!())

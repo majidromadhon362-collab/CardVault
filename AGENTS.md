@@ -33,14 +33,14 @@ Prioritas produk:
 - Rust backend untuk filesystem, dialog native, FFmpeg spawn, queue, dan converter dokumen.
 - React renderer untuk UI.
 - FFmpeg/FFprobe sebagai engine video/audio dan metadata.
-- Tauri updater untuk pengecekan update manual.
+- GitHub Releases untuk pengecekan update manual dan distribusi installer.
 - Electron masih ada sebagai fallback lama, bukan target utama release.
 
 ## Area Penting
 
 - `src-tauri/src/lib.rs`: command Tauri, dialog, queue, FFmpeg spawn, progress events.
 - `src-tauri/src/document.rs`: converter dokumen native Rust.
-- `src-tauri/tauri.conf.json`: bundle, resource FFmpeg, updater endpoint, updater artifacts.
+- `src-tauri/tauri.conf.json`: bundle dan resource FFmpeg.
 - `src/renderer/App.jsx`: state UI, i18n, workflow user, manual update banner.
 - `src/renderer/native.js`: adapter `window.kompres` untuk API Tauri.
 - `src/renderer/styles.css`: visual desktop app.

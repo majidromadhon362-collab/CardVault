@@ -49,8 +49,8 @@ Tanggung jawab:
 - Mengekspos API kompatibel `window.kompres` untuk renderer.
 - Memanggil command Rust via `invoke`.
 - Subscribe event progress via `listen`.
-- Mengecek update via `@tauri-apps/plugin-updater`.
-- Menginstall update hanya setelah user klik tombol update.
+- Mengecek update dari GitHub Releases public API.
+- Membuka halaman download installer terbaru hanya setelah user klik tombol update.
 
 ### Rust Backend
 
@@ -103,9 +103,9 @@ Workflow:
 3. `npm ci`.
 4. Install/copy FFmpeg.
 5. `npm run tauri:build`.
-6. Upload installer dan updater artifacts ke GitHub Release.
+6. Upload installer `.exe` dan `.msi` ke GitHub Release.
 
-Update di app tidak otomatis. App hanya mengecek update dan menampilkan card. User harus klik tombol update untuk download/install.
+Update di app tidak otomatis. App hanya mengecek release terbaru dan menampilkan card. User harus klik tombol update untuk membuka halaman download installer terbaru.
 
 ## Data Flow Media Processing
 
