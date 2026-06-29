@@ -5,7 +5,7 @@ const LANGUAGES = {
   en: { label: 'English', flag: '🇬🇧' },
 };
 
-const APP_VERSION = import.meta.env.VITE_APP_VERSION || '0.1.3';
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || '0.1.4';
 
 const TEXT = {
   id: {

@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "CardVault",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "identifier": "com.cardvault.desktop",
   "build": {
     "beforeDevCommand": "npm run prepare:assets && vite --host 127.0.0.1",
@@ -40,7 +40,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNENkM4RTRDMTg1OUQwRTMKUldUajBGa1lUSTVzUFk4WG96NmlieHEvckFFSUIyUEkyalZ3UzB5VWZRVFg1T1VmRnBOU2t6bHgK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE3OThFNkUxN0Y2NkNENgpSV1RXYlBZWGJvNTVBZFlzQW9MUWFLdVp1bUFWMHFQUnlGQjN3RG5lVFl6eEZZT1kxUWEvQ0lKWAo=",
       "endpoints": [
         "https://github.com/majidromadhon362-collab/CardVault/releases/latest/download/latest.json"
       ]

@@ -1,6 +1,6 @@
 [package]
 name = "cardvault"
-version = "0.1.3"
+version = "0.1.4"
 description = "CardVault desktop app"
 authors = ["CardVault"]
 edition = "2021"
