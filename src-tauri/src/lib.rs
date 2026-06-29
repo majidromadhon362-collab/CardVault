@@ -16,6 +16,8 @@ use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_notification::NotificationExt;
 use url::Url;
 
+mod document;
+
 #[derive(Default)]
 struct AppState {
   job: Mutex<Option<Arc<JobControl>>>,
@@ -385,43 +387,17 @@ fn run_ffmpeg_task(app: &AppHandle, control: &Arc<JobControl>, payload: &StartPa
   })
 }
 
-fn find_libreoffice() -> Option<String> {
-  let direct = [
-    r"C:\Program Files\LibreOffice\program\soffice.exe",
-    r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
-  ];
-  for item in direct {
-    if Path::new(item).exists() { return Some(item.into()); }
-  }
-  Command::new("where.exe").arg("soffice").output().ok().and_then(|output| {
-    if output.status.success() {
-      String::from_utf8_lossy(&output.stdout).lines().next().map(|s| s.to_string())
-    } else { None }
-  })
-}
-
 fn run_document_task(payload: &StartPayload, source: &str) -> Result<ToolResult, String> {
-  let soffice = find_libreoffice().ok_or("LibreOffice belum terinstall. Install LibreOffice untuk converter file 0 biaya.")?;
-  let target = match payload.tool_id.as_str() {
-    "pdf-to-docx" => "docx",
-    "pdf-to-excel" => "xlsx",
-    "word-to-pdf" | "excel-to-pdf" => "pdf",
+  let ext = match payload.tool_id.as_str() {
+    "pdf-to-docx" => ".docx",
+    "pdf-to-excel" => ".xlsx",
+    "word-to-pdf" | "excel-to-pdf" => ".pdf",
     _ => return Err("Unsupported document converter.".into()),
   };
-  let output = Command::new(soffice)
-    .args(["--headless", "--convert-to", target, "--outdir", &payload.output_directory, source])
-    .output()
-    .map_err(|e| e.to_string())?;
-  if !output.status.success() {
-    return Err(String::from_utf8_lossy(&output.stderr).to_string());
-  }
-  let stem = Path::new(source).file_stem().and_then(|v| v.to_str()).unwrap_or("output");
-  let produced = PathBuf::from(&payload.output_directory).join(format!("{}.{}", stem, target));
-  if !produced.exists() { return Err("Output converter tidak ditemukan.".into()); }
-  let final_output = safe_output(source, &payload.output_directory, &format!(".{}", target));
-  fs::rename(&produced, &final_output).map_err(|e| e.to_string())?;
-  let input_size = fs::metadata(source).map_err(|e| e.to_string())?.len();
-  let output_size = fs::metadata(&final_output).map_err(|e| e.to_string())?.len();
+  let final_output = safe_output(source, &payload.output_directory, ext);
+  let source_clone = source.to_string();
+  let tool_id = payload.tool_id.clone();
+  let (input_size, output_size) = document::convert(&source_clone, &final_output, &tool_id)?;
   let saved = input_size as i64 - output_size as i64;
   Ok(ToolResult {
     source_file: source.into(),

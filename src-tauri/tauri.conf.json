@@ -39,7 +39,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVDRUZGQzlDNTE2QUJDMDEKUldRQnZHcFJuUHp2WEo2N1Zxc3psMEU1bGplTzZNeGNtUlFSSVh2T3FPTkticGdwQ3hzeG5zSG0K",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNENkM4RTRDMTg1OUQwRTMKUldUajBGa1lUSTVzUFk4WG96NmlieHEvckFFSUIyUEkyalZ3UzB5VWZRVFg1T1VmRnBOU2t6bHgK",
       "endpoints": [
         "https://github.com/majidromadhon362-collab/CardVault/releases/latest/download/latest.json"
       ]
