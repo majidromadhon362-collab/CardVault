@@ -1,0 +1,48 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "CardVault",
+  "version": "0.1.0",
+  "identifier": "com.cardvault.desktop",
+  "build": {
+    "beforeDevCommand": "npm run prepare:assets && vite --host 127.0.0.1",
+    "devUrl": "http://127.0.0.1:5173",
+    "beforeBuildCommand": "npm run prepare:ffmpeg && npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "CardVault",
+        "width": 1180,
+        "height": 780,
+        "minWidth": 980,
+        "minHeight": 680
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["icons/icon.ico"],
+    "resources": [
+      "../resources/ffmpeg/win32-x64/ffmpeg.exe",
+      "../resources/ffmpeg/win32-x64/ffprobe.exe"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "both"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVDRUZGQzlDNTE2QUJDMDEKUldRQnZHcFJuUHp2WEo2N1Zxc3psMEU1bGplTzZNeGNtUlFSSVh2T3FPTkticGdwQ3hzeG5zSG0K",
+      "endpoints": [
+        "https://github.com/majidromadhon362-collab/CardVault/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "name": "cardvault",
+  "version": "0.1.0",
+  "description": "CardVault: backup dan kompres footage dari memory card dengan FFmpeg.",
+  "author": "CardVault",
+  "main": "src/main/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && cross-env ELECTRON_RENDERER_URL=http://127.0.0.1:5173 electron .\"",
+    "prepare:assets": "node scripts/prepare-assets.js",
+    "prepare:ffmpeg": "node scripts/prepare-ffmpeg.js",
+    "build": "npm run prepare:assets && vite build",
+    "start": "electron .",
+    "package": "npm run prepare:ffmpeg && npm run build && electron-builder --dir",
+    "dist": "npm run prepare:ffmpeg && npm run build && electron-builder",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-updater": "^2.10.1",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
+    "@vitejs/plugin-react": "latest",
+    "concurrently": "latest",
+    "cross-env": "latest",
+    "electron": "latest",
+    "electron-builder": "latest",
+    "png-to-ico": "^3.0.1",
+    "vite": "latest",
+    "wait-on": "latest"
+  },
+  "build": {
+    "appId": "com.cardvault.desktop",
+    "productName": "CardVault",
+    "compression": "store",
+    "disableAsarIntegrity": true,
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "src/main/main.js",
+      "src/main/preload.cjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/ffmpeg/win32-x64",
+        "to": "ffmpeg/win32-x64",
+        "filter": [
+          "ffmpeg.exe",
+          "ffprobe.exe"
+        ]
+      }
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "CardVault",
+      "uninstallDisplayName": "CardVault"
+    }
+  }
+}

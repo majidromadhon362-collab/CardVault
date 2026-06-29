@@ -1,0 +1,13 @@
+node_modules/
+dist/
+release/
+release-cardvault/
+src-tauri/target/
+resources/ffmpeg/
+build/
+.tauri/
+*.log
+.env
+.env.*
+.DS_Store
+Thumbs.db
