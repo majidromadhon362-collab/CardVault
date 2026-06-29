@@ -23,6 +23,8 @@
     "react-dom": "latest"
   },
   "devDependencies": {
+    "@emnapi/core": "^1.11.1",
+    "@emnapi/runtime": "^1.11.1",
     "@tauri-apps/cli": "^2.11.4",
     "@vitejs/plugin-react": "latest",
     "concurrently": "latest",
