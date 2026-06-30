@@ -1,6 +1,6 @@
 {
   "name": "cardvault",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "CardVault: backup dan kompres footage dari memory card dengan FFmpeg.",
   "author": "CardVault",
   "main": "src/main/main.js",

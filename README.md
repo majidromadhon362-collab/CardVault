@@ -94,8 +94,8 @@ src-tauri/target/release/bundle/msi/
 Release dibuat otomatis oleh GitHub Actions saat tag versi dipush:
 
 ```powershell
-git tag v0.1.6
-git push origin v0.1.6
+git tag v0.1.7
+git push origin v0.1.7
 ```
 
 GitHub Actions tidak membutuhkan updater signing secret. Workflow hanya build installer dan upload release assets.

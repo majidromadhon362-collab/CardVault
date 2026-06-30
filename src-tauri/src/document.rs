@@ -118,16 +118,17 @@ fn pdf_to_docx(source: &str, output: &str) -> Result<(), String> {
   for page_num in &pages {
     if let Ok(content) = doc.extract_text(&[*page_num]) {
       text.push_str(&content);
-      text.push('\n');
+      text.push_str("\n\n");
     }
   }
 
-  let lines: Vec<&str> = text.lines().collect();
+  let lines = normalize_pdf_text_lines(&text);
   if lines.is_empty() {
     return Err("Tidak ada teks di PDF.".into());
   }
 
-  generate_docx(&lines, output)
+  let refs = lines.iter().map(String::as_str).collect::<Vec<_>>();
+  generate_docx(&refs, output)
 }
 
 fn pdf_to_xlsx(source: &str, output: &str) -> Result<(), String> {
@@ -150,6 +151,62 @@ fn pdf_to_xlsx(source: &str, output: &str) -> Result<(), String> {
   }
 
   generate_xlsx(&lines, output)
+}
+
+fn normalize_pdf_text_lines(text: &str) -> Vec<String> {
+  let mut paragraphs = Vec::new();
+  let mut current = String::new();
+
+  for raw in text.lines() {
+    let line = raw.split_whitespace().collect::<Vec<_>>().join(" ");
+    if line.is_empty() {
+      if !current.trim().is_empty() {
+        paragraphs.push(current.trim().to_string());
+        current.clear();
+      }
+      continue;
+    }
+
+    if current.is_empty() {
+      current.push_str(&line);
+      continue;
+    }
+
+    if should_start_new_paragraph(&current, &line) {
+      paragraphs.push(current.trim().to_string());
+      current.clear();
+      current.push_str(&line);
+    } else {
+      append_pdf_line(&mut current, &line);
+    }
+  }
+
+  if !current.trim().is_empty() {
+    paragraphs.push(current.trim().to_string());
+  }
+
+  paragraphs
+}
+
+fn should_start_new_paragraph(current: &str, next: &str) -> bool {
+  let current = current.trim();
+  let next = next.trim();
+  if current.len() < 40 {
+    return false;
+  }
+  let ends_sentence = current.ends_with('.') || current.ends_with('!') || current.ends_with('?');
+  let looks_like_heading = next.len() <= 48 && !next.ends_with('.') && next.chars().filter(|c| c.is_alphabetic()).count() > 2;
+  let starts_uppercase = next.chars().find(|c| c.is_alphabetic()).map(|c| c.is_uppercase()).unwrap_or(false);
+  ends_sentence && (looks_like_heading || starts_uppercase)
+}
+
+fn append_pdf_line(current: &mut String, line: &str) {
+  let no_space_before = matches!(line.chars().next(), Some('.') | Some(',') | Some(':') | Some(';') | Some('!') | Some('?') | Some(')') | Some(']'));
+  let no_space_after = current.ends_with('(') || current.ends_with('[') || current.ends_with('/') || current.ends_with('-');
+  if !no_space_before && !no_space_after {
+    current.push(' ');
+  }
+  current.push_str(line);
 }
 
 fn extract_docx_text(xml: &str) -> Vec<String> {
@@ -513,5 +570,13 @@ mod tests {
 
     let _ = fs::remove_file(pdf);
     let _ = fs::remove_file(docx);
+  }
+
+  #[test]
+  fn normalizes_word_per_line_pdf_text() {
+    let lines = normalize_pdf_text_lines("Ini\nadalah\ncontoh\nteks\nyang\nterpecah\nper\nkata\n.\n\nParagraf\nbaru\nberikutnya\n.");
+    assert_eq!(lines.len(), 2);
+    assert_eq!(lines[0], "Ini adalah contoh teks yang terpecah per kata.");
+    assert_eq!(lines[1], "Paragraf baru berikutnya.");
   }
 }

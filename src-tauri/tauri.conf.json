@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "CardVault",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "identifier": "com.cardvault.desktop",
   "build": {
     "beforeDevCommand": "npm run prepare:assets && vite --host 127.0.0.1",
@@ -33,7 +33,8 @@
     ],
     "windows": {
       "nsis": {
-        "installMode": "both"
+        "installMode": "both",
+        "installerHooks": "nsis-hooks.nsh"
       }
     }
   }
