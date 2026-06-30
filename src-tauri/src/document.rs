@@ -484,3 +484,34 @@ fn col_letter(n: usize) -> String {
   }
   s
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use std::time::{SystemTime, UNIX_EPOCH};
+
+  fn test_path(extension: &str) -> String {
+    let id = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+    std::env::temp_dir().join(format!("cardvault-doc-test-{}.{}", id, extension)).to_string_lossy().to_string()
+  }
+
+  #[test]
+  fn converts_digital_pdf_to_docx() {
+    let pdf = test_path("pdf");
+    let docx = test_path("docx");
+    generate_pdf(&["CardVault native document converter test".to_string()], &pdf).unwrap();
+
+    let result = convert(&pdf, &docx, "pdf-to-docx").unwrap();
+    assert!(result.0 > 0);
+    assert!(result.1 > 0);
+
+    let file = fs::File::open(&docx).unwrap();
+    let mut archive = zip::ZipArchive::new(file).unwrap();
+    let mut xml = String::new();
+    archive.by_name("word/document.xml").unwrap().read_to_string(&mut xml).unwrap();
+    assert!(xml.contains("CardVault"));
+
+    let _ = fs::remove_file(pdf);
+    let _ = fs::remove_file(docx);
+  }
+}

@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, Notification } from 'electron';
-import { execFileSync, spawn } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -258,24 +258,6 @@ function getFreeSpace(directoryPath) {
   }
 }
 
-function findLibreOffice() {
-  const directCandidates = [
-    'C:\\Program Files\\LibreOffice\\program\\soffice.exe',
-    'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe',
-  ];
-
-  const directMatch = directCandidates.find((candidate) => fs.existsSync(candidate));
-  if (directMatch) return directMatch;
-
-  try {
-    const finder = process.platform === 'win32' ? 'where.exe' : 'which';
-    const output = execFileSync(finder, ['soffice'], { encoding: 'utf8' });
-    return output.split(/\r?\n/).find(Boolean) || null;
-  } catch {
-    return null;
-  }
-}
-
 function notifyComplete(results, errors) {
   if (!activeJob?.notifyEnabled || !Notification.isSupported()) return;
   new Notification({
@@ -477,40 +459,7 @@ async function runMergeTask({ files, outputDirectory, options, jobId, startedAt 
 }
 
 async function runDocumentTask({ toolId, sourceFile, outputDirectory }) {
-  const libreOffice = findLibreOffice();
-  if (!libreOffice) throw new Error('LibreOffice belum terinstall. Install LibreOffice untuk converter file 0 biaya.');
-
-  const convertMap = {
-    'pdf-to-docx': 'docx',
-    'pdf-to-excel': 'xlsx',
-    'word-to-pdf': 'pdf',
-    'excel-to-pdf': 'pdf',
-  };
-  const target = convertMap[toolId];
-  if (!target) throw new Error(`Converter ${toolId} belum tersedia.`);
-
-  await runProcess(libreOffice, ['--headless', '--convert-to', target, '--outdir', outputDirectory, sourceFile]);
-
-  const parsed = path.parse(sourceFile);
-  const defaultOutput = path.join(outputDirectory, `${parsed.name}.${target}`);
-  if (!fs.existsSync(defaultOutput)) throw new Error('Output converter tidak ditemukan. File mungkin tidak didukung LibreOffice.');
-
-  const inputSize = fs.statSync(sourceFile).size;
-  const outputSize = fs.statSync(defaultOutput).size;
-  return {
-    sourceFile,
-    outputFile: defaultOutput,
-    outputUrl: pathToFileURL(defaultOutput).toString(),
-    inputSize,
-    outputSize,
-    inputSizeText: formatSize(inputSize),
-    outputSizeText: formatSize(outputSize),
-    savedBytes: inputSize - outputSize,
-    savedText: formatSize(Math.max(inputSize - outputSize, 0)),
-    savedPercent: inputSize > 0 ? Math.round(((inputSize - outputSize) / inputSize) * 100) : 0,
-    validation: await validateOutput({ outputFile: defaultOutput, sourceDuration: 0, previewType: 'document' }),
-    previewType: 'document',
-  };
+  throw new Error(`Converter dokumen ${toolId} hanya tersedia di build Tauri terbaru. Install CardVault dari GitHub Releases, bukan menjalankan fallback Electron.`);
 }
 
 function filtersForMode(mode) {
